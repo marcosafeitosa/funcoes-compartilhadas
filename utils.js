@@ -1,8 +1,8 @@
-
-function soma(a, b) {
-    return a + b;
+// utils.js
+export function saudacao(nome) {
+    return `Olá, ${nome}!`;
 }
 
-// Torne as funções globais
-window.saudacao = saudacao;
-window.soma = soma;
+export function soma(a, b) {
+    return a + b;
+}
