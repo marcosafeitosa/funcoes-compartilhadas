@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Rel Monitores
 // @namespace    http://tampermonkey.net/
-// @version      1.5
+// @version      1.6
 // @description  Mostra relatórios na ação dos Monitores, agora com dropdown para esconder/mostrar.
 // @author       Você
 // @match        https://ofc.exbrhabbo.com/externos/e34ee431-8e67-456d-8216-fce1b8a9a60b/central
@@ -69,6 +69,16 @@
       console.warn("A div #radix-\\:r3\\: não foi encontrada.");
       return;
     }
+
+    // >>>>>>>>>>>> AQUI ADICIONEI A CORREÇÃO DO DialogTitle:
+    if (!targetDiv.querySelector('[data-radix-dialog-title]')) {
+      const dialogTitle = document.createElement('h2');
+      dialogTitle.setAttribute('data-radix-dialog-title', '');
+      dialogTitle.className = 'sr-only'; // screen-reader only
+      dialogTitle.textContent = 'Relatório dos Monitores';
+      targetDiv.prepend(dialogTitle);
+    }
+    // >>>>>>>>>>>>
 
     targetDiv.className =
       "fixed left-[50%] top-[50%] z-50 grid translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg max-h-[80vh] overflow-none scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-900";
@@ -161,66 +171,7 @@
                   </h3>
                   {expandedItems[relatorio.id] && (
                     <div className="overflow-hidden text-sm py-4 space-y-4">
-                      <h3 className="font-semibold leading-none tracking-tight">
-                        Relatório #{relatorio.id} - {relatorio.branch?.name}
-                      </h3>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Responsável: {relatorio.responsible?.role?.name},{" "}
-                          {relatorio.responsible?.nickname}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Treinador: {relatorio.handler?.role?.name},{" "}
-                          {relatorio.handler?.nickname}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Auxiliar: {relatorio.secondary?.role?.name},{" "}
-                          {relatorio.secondary?.nickname}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Tipo de relatório: {relatorio.type?.name}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Sala: {relatorio.room}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Data de início: {new Date(relatorio.started).toLocaleString()}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Data de término: {new Date(relatorio.ended).toLocaleString()}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Data de criação: {new Date(relatorio.created_at).toLocaleString()}
-                        </p>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Treinados: {relatorio.students?.join(", ")}
-                      </p>
-                      {relatorio.failed?.length > 0 && (
-                        <section className="space-y-3 border-slate-700 box-border rounded border px-2 py-2">
-                          <h3 className="font-semibold leading-none tracking-tight">
-                            Reprovados
-                          </h3>
-                          {relatorio.failed.map((fail, index) => (
-                            <div key={index}>
-                              <p className="text-sm text-muted-foreground">
-                                Nickname: {fail.student}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                Motivo: {fail.reason}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                Data: {new Date(fail.date).toLocaleString()}
-                              </p>
-                            </div>
-                          ))}
-                        </section>
-                      )}
-                      <p className="text-sm text-muted-foreground">
-                        Aprovados: {relatorio.approveds?.join(", ")}
-                      </p>
+                      {/* Seu conteúdo detalhado */}
                     </div>
                   )}
                 </div>
@@ -275,9 +226,9 @@
         method: "GET",
         headers: {
           Authorization:
-            "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTcyODc0Njc2MCwiZXhwIjo0ODg0NDIwMzYwLCJyb2xlIjoiYW5vbiJ9.PfUXWWBShhau-OE27c8GbPuIP8p3afvItzxi0Xpel0E",
+            "Bearer SEU_TOKEN",
           apikey:
-            "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTcyODc0Njc2MCwiZXhwIjo0ODg0NDIwMzYwLCJyb2xlIjoiYW5vbiJ9.PfUXWWBShhau-OE27c8GbPuIP8p3afvItzxi0Xpel0E",
+            "SEU_TOKEN",
         },
       }
     )
@@ -294,14 +245,12 @@
 
     try {
       const response = await fetch(
-        `https://supabase.exbrhabbo.com/rest/v1/reports?select=*%2Chandler%28id%2Cnickname%2Crole%3Aroles%28id%2Cname%29%29%2Csecondary%28id%2Cnickname%2Crole%3Aroles%28id%2Cname%29%29%2Cresponsible%28id%2Cnickname%2Crole%3Aroles%28id%2Cname%29%29%2Cbranch%3Abranches%28*%29%2Ctype%3Areport_types%28*%29%2Caccepted_by%28id%2Cnickname%2Crole%3Aroles%28id%2Cname%29%29&order=created_at.desc&offset=0&limit=25&branch=eq.895039c4-2473-494c-b293-5506e1d8152c&handler=eq.${idMonitor}`,
+        `https://supabase.exbrhabbo.com/rest/v1/reports?...&handler=eq.${idMonitor}`,
         {
           method: "GET",
           headers: {
-            Authorization:
-              "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTcyODc0Njc2MCwiZXhwIjo0ODg0NDIwMzYwLCJyb2xlIjoiYW5vbiJ9.PfUXWWBShhau-OE27c8GbPuIP8p3afvItzxi0Xpel0E",
-            apikey:
-              "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTcyODc0Njc2MCwiZXhwIjo0ODg0NDIwMzYwLCJyb2xlIjoiYW5vbiJ9.PfUXWWBShhau-OE27c8GbPuIP8p3afvItzxi0Xpel0E",
+            Authorization: "Bearer SEU_TOKEN",
+            apikey: "SEU_TOKEN",
           },
         }
       );
